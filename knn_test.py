@@ -1,3 +1,20 @@
+"""
+This script implements the k-NN method for classifying boxing punches.
+It reads the provided data files in the data directory using the python
+pickle module.
+
+The script applies the k-NN method and generates some plots using metric
+functions from the scikit-learn library and uses the metrics to generate plots.
+
+Two experiments are run in this script:
+    1. Varying the k paramter
+    2. Examining the difference between the two coordinate systems provided by the
+       mediapipe pose extraction model (world coordinates: centered on the midpoint
+       of the hips in meters, relatice coordinates: location on the image centered
+       om the top left corner)
+
+"""
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
@@ -11,19 +28,19 @@ import pandas as pd
 import pickle
 label_names = ['cross', 'jab', 'lead hook', 'lead uppercut', 'rear hook',
                'rear uppercut', 'stance']
+
+# Labels of the dataset (not included in the pose_data_1 and pose_data_2 files)
 labels = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6,
           0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6]
 
+# Contains weights by which keypoint distances are adjusted based on importance
 weights_1 = [1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
            0.1, 1, 1, 1, 1, 1, 1, 0.1, 0.1, 0.1,
            0.1, 0.1, 0.1, 0.8, 0.8, 0.5, 0.5, 0.5, 0.5, 0.5,
            0.5, 0.5, 0.1, 0.1]
 
 
-# x_train, x_test, y_train, y_test = train_test_split(coords, labels, test_size=0.3, random_state=12345)
-#
-# knn_model = NearestNeighbors(n_neighbors=3)
-# knn_model.fit(x_train, y_train)
+
 def plot_confusion_matrix(true_labels, predicted_labels, class_names):
     """
     Plot a confusion matrix for a 7-class classification problem.
@@ -51,6 +68,16 @@ def plot_confusion_matrix(true_labels, predicted_labels, class_names):
     plt.show()
 
 def my_dist(a, b, weights):
+    """
+    Calculates the distance between two data-points fot the k-NN method
+
+    Parameters:
+    - a (list of thruples): data-point 1 
+    - b (list of thruples): data-point 2 
+
+    Returns:
+    - distances measure (weighted sum of distances)
+    """
     distances = []
     #print(len(weights))
     for i, point_pair in enumerate(zip(a, b)):
@@ -60,6 +87,18 @@ def my_dist(a, b, weights):
 
 
 def distances_to_set(x, point, weights):
+    """
+    Finds the distances from the given data-point (point) and returns a list
+    of distances from that point to all the data-points in the provided list
+    of data-points (x)
+
+    Parameters:
+    - x (list of list of keypoints): data-set
+    - point (key-point thruple): point to compare to the data-set
+
+    Returns:
+    - list of distances
+    """
     distances = []
     for keypoint in x:
         distances.append(my_dist(keypoint, point, weights))
@@ -67,10 +106,33 @@ def distances_to_set(x, point, weights):
 
 
 def mode(lst):
+    """
+    Finds the most common element of a list
+
+    Parameters:
+    lst (list): list to check the mode
+
+    Returns:
+    mode of the list
+    """
     return int(max(set(lst), key=lst.count))
 
 
 def knn_multiple(data, point_set, weights, k):
+    """
+    Executes the k-NN algorithm for every point in the given set of data-points
+    and returns a list of predicted labels
+
+    Parameters:
+    data (list of list of key-points): Data to be used in k-NN algorithm
+    point_set (list of list of key-points): Points for which labels should be predicted
+    weights (list): not used
+    k (int): k paramameter
+
+    Returns:
+    predictions (list): list of predicted labels for datapoints in point_set
+
+    """
     x = data[0]
     y = data[1]
     predictions = []
@@ -85,7 +147,14 @@ def knn_multiple(data, point_set, weights, k):
 
 
 def load_data(num):
-    pickle_file = open('pose_data_' + str(num), 'rb')
+    """
+    Unpickles the datafiles that contain the points to be used by the k-NN method
+    """
+    pickle_file = None
+    if num == 1:
+        pickle_file = open('data\pose_data_1', 'rb')
+    elif num == 2:
+        pickle_file = open('data\pose_data_2', 'rb')
     return pickle.load(pickle_file)
 
 
@@ -111,7 +180,8 @@ def main():
 
     x_train, x_test, y_train, y_test = train_test_split(world_coords, labels, test_size=0.3, random_state=12345)
 
-    distances = distances_to_set(x_train, x_test[0], [])
+
+    ### Experiment on different k parameter values
     f1_scores = []
     for k in range(1, 6):
         predictions = knn_multiple([x_train, y_train], x_test, weights_1, k)
@@ -131,7 +201,7 @@ def main():
 
 
 
-
+    ### Execute k-NN and plot results
     predictions = knn_multiple([x_train, y_train], x_test, weights_1, 3)
     print(predictions)
     print(y_test)
