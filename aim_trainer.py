@@ -1,3 +1,19 @@
+"""
+This script is a simple example of a possible boxing aim assistance trainer.
+From either a video or webcam input, the script uses mediapipe to extract key-points.
+
+The script displays the video feed and superimposes some orange circles on top that serve
+as targets for the user. 
+
+The script uses the extracted keypoint data to detect when a punch
+is thrown and whether the punch was within the target. If a hit is registered, the script
+moves on to a new target.
+
+Target locations can be specified by modifying the circle_coords list in the main function.
+Each tuple represents the (x,y) coordinates of the center of each target on the image.
+
+"""
+
 import cv2
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
@@ -8,11 +24,19 @@ import math
 
 
 def get_file():
+    """
+    Uses the tkinter library to request a file
+
+    returns a file path
+    """
     Tk().withdraw()
     return askopenfilename()
 
 
 def check_tolerance(center, wrist, frame_dims):
+    """
+    Checks if the wrist is within the target
+    """
     wrist_abs = (int(wrist[0] * frame_dims[0]), int(wrist[1] * frame_dims[1]))
     center_norm = (center[0] / frame_dims[0], center[1] / frame_dims[1])
     return math.dist(center_norm, wrist) < 0.1
