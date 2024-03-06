@@ -14,5 +14,5 @@ It also will make new videos with reduced sizes by 1.5, 2, 4 and save them in th
 ## knn_test
 Implements the k-Nearest Neighbor method for classifying boxing moves. Can be run as is.
 
-## Deep_Learning_Code.ipynb
+## Deep_Learning_Model.ipynb
 Implements the LSTM deep learning method for classifying boxing moves. See details in the notebook.
