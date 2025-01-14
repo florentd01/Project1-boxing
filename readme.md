@@ -15,4 +15,4 @@ It also will make new videos with reduced sizes by 1.5, 2, 4 and save them in th
 Implements the k-Nearest Neighbor method for classifying boxing moves. Can be run as is.
 
 ## Deep_Learning_Model.ipynb
-Implements the LSTM deep learning method for classifying boxing moves. See details in the notebook.
+Implements the LSTM deep learning method for classifying boxing moves. This notebook includes all the necessary steps for data loading, preprocessing, model creation, training, evaluation, and visualization of results. The model is designed to classify various boxing moves from video data. For detailed explanations and code, please refer to the notebook.
